@@ -17,15 +17,13 @@ BlockingQueue();
 bool offer(T &item);
 void put(T &item);
 
-bool poll(T *item);
-void takeOne(T *item);
-int takeSome(std::vector<T*> *items, int num);
-int takeAll(std::vector<T*> *items);
+bool poll(T &item);
+void takeOne(T &item);
+int takeAll(std::vector<T*> &items);
 
 private:
-std::queue queue_;
+std::queue<T> queue_;
 std::mutex mu_;
-std::condition_variable cv_produ;
 std::condition_variable cv_consu;
 
 };

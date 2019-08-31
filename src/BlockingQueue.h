@@ -14,12 +14,12 @@ public:
 BlockingQueue();
 ~BlockingQueue();
 
-bool offer(T &item);
-void put(T &item);
+bool offer(T* item);
+void put(T* item);
 
-bool poll(T &item);
-void takeOne(T &item);
-int takeAll(std::vector<T*> &items);
+bool poll(T* item);
+void takeOne(T* item);
+int takeAll(std::vector<T>* items);
 
 private:
 std::queue<T> queue_;

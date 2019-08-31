@@ -34,13 +34,13 @@ SimpleThreadPool::~SimpleThreadPool(){
 }
 
 void SimpleThreadPool::Schedule(std::function<void()> task){
-    if (Stop_){
-        std::cout << "ThreadPool Stoped" << std::endl;
-        return;
-    }
-    std::unique_lock<std::mutex> lock(mutex_);
-    taskQueue_.push(task);
-    cv_.notify_one();
+  if (Stop_){
+      std::cout << "ThreadPool Stoped" << std::endl;
+      return;
+  }
+  std::unique_lock<std::mutex> lock(mutex_);
+  taskQueue_.push(task);
+  cv_.notify_one();
 }
 
 } //namespace TinyToy

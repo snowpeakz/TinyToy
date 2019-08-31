@@ -1,3 +1,6 @@
+#ifndef TINYTOY_SIMPLETHREADPOOL_H
+#define TINYTOY_SIMPLETHREADPOOL_H
+
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -29,3 +32,5 @@ private:
 };
   
 } //namespace TinyToy
+
+#endif //TINYTOY_SIMPLETHREADPOOL_H

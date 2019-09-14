@@ -7,8 +7,6 @@ Allocator::Allocator() {
   for (int i = 0; i < bins_num; ++i) {
     Byte* data = new Byte[chunk_capacity[i]];
     Chunk* ch = new Chunk(nullptr, nullptr, chunk_capacity[i], i, false, data);
-    std::mutex* mu = new std::mutex;
-    mus_.push_back(mu);
     Bin* b = new Bin(i, chunk_capacity[i], ch, 1);
     bins_.push_back(b);
   }
@@ -18,7 +16,6 @@ Allocator::~Allocator() {
   size_t bins_num = chunk_capacity.size();
   for (int i = 0; i < bins_num; ++i) {
     Bin* bin = bins_[i];
-    mus_[i]->lock();
     Chunk *it = bin->Chunks_head;
     while (it) {
       auto iter = allocated_.find(it->data);
@@ -28,11 +25,13 @@ Allocator::~Allocator() {
       }
       if (it->data) {
         delete[] it->data;
+        it->data = nullptr;
       }
       if (it ->prev) {
         delete it->prev;
+        it->prev = nullptr;
       }
-      if (!it->next) {
+      if (it->next) {
         delete it;
         it = nullptr;
       } else {
@@ -40,8 +39,6 @@ Allocator::~Allocator() {
       }
     }
     delete bin;
-    mus_[i]->unlock();
-    delete mus_[i];
   }
 }
 
@@ -52,7 +49,7 @@ void* Allocator::allocate(size_t req) {
   size_t bin_id = std::log2(req);
   ++bin_id;
   {
-    std::lock_guard<std::mutex> l(*mus_[bin_id]);
+    std::lock_guard<std::mutex> l(bins_[bin_id]->mu);
     Chunk* it = bins_[bin_id]->Chunks_head;
     while (it) {
       if (it->is_allocated == false) {
@@ -91,7 +88,7 @@ bool Allocator::relase(void* ptr) {
   }
   // assume user won't relase same Chunk at same time
   {
-    std::lock_guard<std::mutex> l(*mus_[ch->bin]);
+    std::lock_guard<std::mutex> l(bins_[ch->bin]->mu);
     ch->is_allocated = false;
     auto p = ch->prev, n = ch->next;
     if (p) {
@@ -104,6 +101,10 @@ bool Allocator::relase(void* ptr) {
     ch->next = bins_[ch->bin]->Chunks_head;
     bins_[ch->bin]->Chunks_head->prev = ch;
     bins_[ch->bin]->Chunks_head = ch;
+  }
+  {
+    std::lock_guard<std::mutex> l(mu_);
+    allocated_.erase(ptr);
   }
 }
 

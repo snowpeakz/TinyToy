@@ -29,6 +29,7 @@ struct Bin {
   size_t Chunks_size;
   Chunk* Chunks_head;
   size_t temperature;
+  std::mutex mu;
   Bin(size_t i, size_t Cs, Chunk* Ch, size_t t)
     : id(i), Chunks_size(Cs), Chunks_head(Ch), temperature(t) {}
 };
@@ -47,7 +48,6 @@ private:
 
   std::vector<Bin*> bins_;
   std::unordered_map<void*, Chunk*> allocated_;
-  std::vector<std::mutex*> mus_;
   std::mutex mu_;
 };
 
